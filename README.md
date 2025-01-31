@@ -42,6 +42,7 @@ HONEYBADGER_PROJECT_ID=your_honeybadger_project_id
 HONEYBADGER_ASSIGNED_USER_ID=your_honeybadger_user_id
 ASANA_ACCESS_TOKEN=your_asana_access_token
 ASANA_WORKSPACE_ID=your_workspace_id
+ASANA_ASSIGNEE_ID=your_asana_user_id
 ASANA_PROJECT_ID=your_project_id
 ASANA_SECTION_ID=your_section_id
 ```
@@ -173,6 +174,22 @@ You can modify the following in `serverless.yml`:
     {
       "gid": "1234567890123456",  // This is your section ID
       "name": "Your Section Name",
+      ...
+    }
+  ]
+}
+```
+
+#### Asana Assignee ID
+1. Open this URL in your browser: https://app.asana.com/api/1.0/users
+   (make sure you're logged in to Asana)
+2. Find yourself in the response and copy your `gid` value:
+```json
+{
+  "data": [
+    {
+      "gid": "1234567890123456",  // This is your user ID
+      "name": "Your Name",
       ...
     }
   ]

@@ -6,6 +6,7 @@ const HONEYBADGER_API_TOKEN = process.env.HONEYBADGER_API_TOKEN || "";
 const HONEYBADGER_PROJECT_ID = process.env.HONEYBADGER_PROJECT_ID || "";
 const ASANA_ACCESS_TOKEN = process.env.ASANA_ACCESS_TOKEN || "";
 const ASANA_WORKSPACE_ID = process.env.ASANA_WORKSPACE_ID || "";
+const ASANA_ASSIGNEE_ID = process.env.ASANA_ASSIGNEE_ID || "";
 const ASANA_PROJECT_ID = process.env.ASANA_PROJECT_ID || "";
 const ASANA_SECTION_ID = process.env.ASANA_SECTION_ID || "";
 const HONEYBADGER_ASSIGNED_USER_ID =
@@ -47,6 +48,7 @@ export const handler: Handler = async (event, context) => {
         {
           data: {
             workspace: ASANA_WORKSPACE_ID,
+            assignee: ASANA_ASSIGNEE_ID,
             name: `${fault.environment?.toUpperCase()} > Honeybadger Error: ${
               fault.klass
             }`,
