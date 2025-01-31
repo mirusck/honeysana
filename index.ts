@@ -57,7 +57,7 @@ export const handler: Handler = async (event, context) => {
         data: {
           workspace: ASANA_WORKSPACE_ID,
           assignee: ASANA_ASSIGNEE_ID,
-          name: `${fault.environment?.toUpperCase()} > Honeybadger Error: ${fault.klass}`,
+          name: `${fault.environment?.toUpperCase()} > Honeybadger > ${fault.id} > ${fault.klass}`,
           notes: `
             Error Message: ${fault.message}
             Created At: ${fault.created_at ? new Date(fault.created_at).toUTCString() : "n/a"}

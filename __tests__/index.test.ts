@@ -67,7 +67,7 @@ describe("Honeybadger-Asana Integration Lambda", () => {
 
     expect(mockAxiosPost).toHaveBeenCalledWith('/tasks', {
       data: expect.objectContaining({
-        name: expect.stringContaining('PRODUCTION > Honeybadger Error: TestError'),
+        name: expect.stringContaining('PRODUCTION > Honeybadger > 123 > TestError'),
       }),
     });
 
