@@ -1,0 +1,38 @@
+service: align-honeysana
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-2
+  environment:
+    HONEYBADGER_API_TOKEN: ${env:HONEYBADGER_API_TOKEN}
+    HONEYBADGER_PROJECT_ID: ${env:HONEYBADGER_PROJECT_ID}
+    ASANA_ACCESS_TOKEN: ${env:ASANA_ACCESS_TOKEN}
+    ASANA_WORKSPACE_ID: ${env:ASANA_WORKSPACE_ID}
+    ASANA_PROJECT_ID: ${env:ASANA_PROJECT_ID}
+    ASANA_SECTION_ID: ${env:ASANA_SECTION_ID}
+    HONEYBADGER_ASSIGNED_USER_ID: ${env:HONEYBADGER_ASSIGNED_USER_ID}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+
+functions:
+  processHoneybadgerFaults:
+    handler: index.handler
+    events:
+      - schedule:
+          method: scheduler
+          rate:
+            - cron(0 8-19 ? * MON-FRI *)
+          timezone: Europe/Kyiv
+    timeout: 60
+    memorySize: 256
