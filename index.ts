@@ -22,77 +22,65 @@ interface HoneybadgerFault {
   url: string;
 }
 
+// API clients configuration
+const honeybadgerClient = axios.create({
+  baseURL: `https://app.honeybadger.io/v2/projects/${HONEYBADGER_PROJECT_ID}`,
+  auth: {
+    username: HONEYBADGER_API_TOKEN,
+    password: "",
+  },
+});
+
+const asanaClient = axios.create({
+  baseURL: "https://app.asana.com/api/1.0",
+  headers: {
+    Authorization: `Bearer ${ASANA_ACCESS_TOKEN}`,
+    "Content-Type": "application/json",
+  },
+});
+
 export const handler: Handler = async (event, context) => {
   try {
     // Get unassigned faults from Honeybadger
-    const response = await axios.get(
-      `https://app.honeybadger.io/v2/projects/${HONEYBADGER_PROJECT_ID}/faults`,
-      {
-        params: {
-          q: "-is:resolved -is:ignored -is:assigned",
-        },
-        auth: {
-          username: HONEYBADGER_API_TOKEN,
-          password: "",
-        },
-      }
-    );
+    const response = await honeybadgerClient.get("/faults", {
+      params: {
+        q: "-is:resolved -is:ignored -is:assigned",
+      },
+    });
 
-    const faults: HoneybadgerFault[] = response.data["results"];
+    const faults: HoneybadgerFault[] = response.data?.results || [];
 
     // Create tickets for each fault
     for (const fault of faults) {
       // Create ticket in Asana
-      const response = await axios.post(
-        "https://app.asana.com/api/1.0/tasks",
-        {
-          data: {
-            workspace: ASANA_WORKSPACE_ID,
-            assignee: ASANA_ASSIGNEE_ID,
-            name: `${fault.environment?.toUpperCase()} > Honeybadger Error: ${
-              fault.klass
-            }`,
-            notes: `
-          Error Message: ${fault.message}
-          Created At: ${
-            fault.created_at ? new Date(fault.created_at).toUTCString() : "n/a"
-          }
-          Environment: ${fault.environment}
-          Fault ID: ${fault.id}
-          Link: ${fault.url}
-        `,
-            projects: [ASANA_PROJECT_ID],
-            memberships: [
-              {
-                project: ASANA_PROJECT_ID,
-                section: ASANA_SECTION_ID,
-              },
-            ],
-          },
+      await asanaClient.post("/tasks", {
+        data: {
+          workspace: ASANA_WORKSPACE_ID,
+          assignee: ASANA_ASSIGNEE_ID,
+          name: `${fault.environment?.toUpperCase()} > Honeybadger Error: ${fault.klass}`,
+          notes: `
+            Error Message: ${fault.message}
+            Created At: ${fault.created_at ? new Date(fault.created_at).toUTCString() : "n/a"}
+            Environment: ${fault.environment}
+            Fault ID: ${fault.id}
+            Link: ${fault.url}
+          `,
+          projects: [ASANA_PROJECT_ID],
+          memberships: [
+            {
+              project: ASANA_PROJECT_ID,
+              section: ASANA_SECTION_ID,
+            },
+          ],
         },
-        {
-          headers: {
-            Authorization: `Bearer ${ASANA_ACCESS_TOKEN}`,
-            "Content-type": "application/json",
-          },
-        }
-      );
+      });
 
       // Assign fault to user in Honeybadger
-      await axios.put(
-        `https://app.honeybadger.io/v2/projects/${HONEYBADGER_PROJECT_ID}/faults/${fault.id}`,
-        {
-          fault: {
-            assignee_id: HONEYBADGER_ASSIGNED_USER_ID,
-          },
+      await honeybadgerClient.put(`/faults/${fault.id}`, {
+        fault: {
+          assignee_id: HONEYBADGER_ASSIGNED_USER_ID,
         },
-        {
-          auth: {
-            username: HONEYBADGER_API_TOKEN,
-            password: "",
-          },
-        }
-      );
+      });
     }
 
     console.info(`Successfully processed ${faults.length} Honeybadger faults`);
